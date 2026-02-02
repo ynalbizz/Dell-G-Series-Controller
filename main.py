@@ -32,16 +32,16 @@ class MainWindow(QWidget):
         self.init_acpi_call()
         self.setMinimumWidth(600)
         self.setWindowTitle("Dell G Series Controller")
-        # Read last choices from QSettings
+        # Read last choices from QSettingsr
         self.settings = QSettings('Dell-G15', 'Controller')
         #Create grid layout
         grid = QGridLayout()
         self.timer = None
         grid.addWidget(QLabel(f'Device Model:'), 0, 0)
         grid.addWidget(QLabel(f'Dell {self.model}' if self.model != 'Unknown' else self.model), 0, 1)
-        grid.addWidget(self._create_first_exclusive_group(), 1, 0)
+        #grid.addWidget(self._create_first_exclusive_group(), 1, 0)
         if (self.is_root and self.is_dell_g_series):
-            grid.addWidget(self._create_second_exclusive_group(), 1, 1)
+            grid.addWidget(self._create_second_exclusive_group(), 1, 0)
             self.timer = QTimer(self)    #timer to update fan rpm values
             self.timer.setInterval(1000)
             self.timer.timeout.connect(self.get_rpm_and_temp)
@@ -100,6 +100,7 @@ class MainWindow(QWidget):
         else:
             choice = QMessageBox.question(self,"Unrecognized laptop","Laptop model is NOT supported. Try ACPI methods for G15 5525 anyway? You might damage your hardware. Please do not do this if you don't know what you are doing!",QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
             self.is_dell_g_series = (choice == QMessageBox.StandardButton.Yes) #User override
+            print(f"Seu Modelo:{self.model}")
     
     def _check_laptop_model(self):
         """Check for supported laptop model"""
