@@ -1,5 +1,7 @@
 #!/bin/python
+from pprint import pp
 import sys
+import os
 import pexpect
 import tempfile
 import awelc
@@ -7,7 +9,7 @@ import PySide6
 from PySide6.QtCore import (QSettings, QTimer)
 from PySide6.QtGui import (QIcon, QAction)
 from PySide6.QtWidgets import (QColorDialog, QMessageBox,QGridLayout, QGroupBox, QWidget, QPushButton, QApplication,
-                               QVBoxLayout, QHBoxLayout, QDialog, QSlider, QLabel, QSystemTrayIcon, QMenu, QComboBox)
+                               QVBoxLayout, QHBoxLayout, QDialog, QSlider, QLabel, QSystemTrayIcon, QMenu, QComboBox, QStyle)
 from patch import g15_5530_patch
 from patch import g15_5520_patch
 from patch import g15_5515_patch
@@ -19,7 +21,7 @@ class MainWindow(QWidget):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
         self.is_dell_g_series = False
-        self.is_keyboard_supported = True # True by default, in case of no root access, keyboard lights should be adjustable.
+        self.is_keyboard_supported = False # True by default, in case of no root access, keyboard lights should be adjustable.
         self.model = 'Unknown'
         try:
             self.logfile = open("/tmp/dell-g-series-controller.log","w")
@@ -39,9 +41,9 @@ class MainWindow(QWidget):
         self.timer = None
         grid.addWidget(QLabel(f'Device Model:'), 0, 0)
         grid.addWidget(QLabel(f'Dell {self.model}' if self.model != 'Unknown' else self.model), 0, 1)
-        #grid.addWidget(self._create_first_exclusive_group(), 1, 0)
+        grid.addWidget(self._create_first_exclusive_group(), 1, 0)
         if (self.is_root and self.is_dell_g_series):
-            grid.addWidget(self._create_second_exclusive_group(), 1, 0)
+            grid.addWidget(self._create_second_exclusive_group(), 1, 1)
             self.timer = QTimer(self)    #timer to update fan rpm values
             self.timer.setInterval(1000)
             self.timer.timeout.connect(self.get_rpm_and_temp)
@@ -508,9 +510,14 @@ class TrayIcon(QSystemTrayIcon):
 if __name__ == '__main__':
     # Create the Qt Application
     app = QApplication(sys.argv)
-    icon = QIcon.fromTheme("alienarena")
-    app.setWindowIcon(icon)
+    # Load icon from file
+    icon_path = os.path.join(os.path.dirname(__file__), 'window.png')
+    window_icon= QIcon(icon_path)
+    icon = app.style().standardIcon(QStyle.SP_ComputerIcon)
+    app.setWindowIcon(window_icon)
     app.setQuitOnLastWindowClosed(False)
+    app.setApplicationName("Dell G Series Controller")
+    app.setDesktopFileName("Dell G Series Controller")
 
     # Create and show the window
     window = MainWindow()
